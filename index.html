@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F6F2E7">
+<title>Check-in · KindHRM 2026</title>
+<meta name="description" content="Cổng check-in chương trình KindHRM 2026">
+<meta property="og:title" content="Check-in · KindHRM 2026">
+<meta property="og:description" content="Nhập mã check-in để xác nhận tham dự và chọn suất ăn trưa.">
+<meta property="og:image" content="assets/logo.png">
+<link rel="icon" type="image/png" href="assets/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Lora:ital,wght@0,600;0,700;1,500&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="bg-waves" aria-hidden="true">
+  <svg viewBox="0 0 1440 420" preserveAspectRatio="none"><path d="M0 220 C 320 120, 620 330, 980 220 S 1440 160, 1440 160 V420 H0Z" fill="#FFB200" opacity=".10"/><path d="M0 300 C 380 220, 760 380, 1100 290 S 1440 260, 1440 260 V420 H0Z" fill="#FFB200" opacity=".14"/></svg>
+</div>
+
+<div class="demo-banner" id="demo-banner" hidden>Chế độ demo · dữ liệu mẫu, chưa kết nối Google Sheet. Thử mã <b>DEMO001</b> hoặc <b>DEMO002</b>.</div>
+
+<main class="shell">
+  <header class="brand">
+    <img class="brand-logo" src="assets/logo.png" alt="KindHRM · Nghề nhân sự tử tế" width="168" height="56">
+    <p class="eyebrow" data-ev="season"></p>
+    <h1 class="title" data-ev="name">Trao gửi tri thức nghề nhân sự</h1>
+    <p class="theme" data-ev="theme"></p>
+    <ul class="chips" id="event-chips"></ul>
+  </header>
+
+  <!-- HOME -->
+  <section class="view" id="view-home" aria-labelledby="home-h">
+    <div class="card">
+      <h2 class="card-h" id="home-h">Check-in</h2>
+      <p class="muted" id="phase-note"></p>
+      <form id="lookup-form" autocomplete="off" novalidate>
+        <label class="label" for="code-input">Mã check-in</label>
+        <input id="code-input" class="code-input" name="code" inputmode="text" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="20" placeholder="Ví dụ: aB3dE7f" required>
+        <p class="hint">Mã gồm 7 ký tự, có trong email xác nhận. Phân biệt chữ hoa, chữ thường.</p>
+        <p class="error" id="lookup-error" role="alert" hidden></p>
+        <button class="btn btn-primary" type="submit" id="lookup-btn"><span>Tiếp tục</span></button>
+      </form>
+      <button class="link-btn" id="last-pass" type="button" hidden></button>
+    </div>
+
+    <details class="card program" id="program" hidden>
+      <summary>Thông tin chương trình</summary>
+      <div id="program-body"></div>
+    </details>
+  </section>
+
+  <!-- CONFIRM -->
+  <section class="view" id="view-confirm" hidden aria-labelledby="confirm-h">
+    <div class="card">
+      <p class="eyebrow small">Xác nhận thông tin</p>
+      <h2 class="card-h" id="confirm-h">Xin chào, <span id="c-greet"></span></h2>
+      <dl class="info" id="c-info"></dl>
+      <button class="link-btn" type="button" data-action="home">Không phải tôi? Nhập lại mã</button>
+    </div>
+
+    <div class="card" id="meal-card">
+      <h3 class="card-h3">Chọn suất ăn trưa</h3>
+      <p class="muted" data-ev="lunchNote"></p>
+      <div class="meals" id="meal-list" role="radiogroup" aria-label="Suất ăn trưa"></div>
+      <p class="error" id="confirm-error" role="alert" hidden></p>
+      <button class="btn btn-primary" type="button" id="confirm-btn" disabled><span>Xác nhận check-in</span></button>
+    </div>
+
+    <div class="card notice" id="not-open-card" hidden></div>
+  </section>
+
+  <!-- PASS -->
+  <section class="view" id="view-pass" hidden aria-labelledby="pass-name">
+    <article class="pass" id="pass">
+      <div class="pass-head">
+        <img src="assets/logo.png" alt="KindHRM" class="pass-logo" width="96" height="32">
+        <span class="stamp"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 10.5l3.2 3.2L15 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Đã check-in</span>
+      </div>
+      <div class="pass-body">
+        <p class="pass-label">Thẻ check-in · <span data-ev="season"></span></p>
+        <h2 class="pass-name" id="pass-name"></h2>
+        <p class="pass-org" id="pass-org"></p>
+        <div class="pass-grid">
+          <div class="pass-cell wide">
+            <span class="pass-k">Mã check-in</span>
+            <span class="pass-code"><b id="pass-code"></b>
+              <button class="copy-btn" type="button" id="copy-btn" aria-label="Sao chép mã">
+                <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="6.5" y="6.5" width="10" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M13.5 4.5v-.5a1.5 1.5 0 00-1.5-1.5H5A1.5 1.5 0 003.5 4v7A1.5 1.5 0 005 12.5h.5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg><span>Sao chép</span>
+              </button>
+            </span>
+          </div>
+          <div class="pass-cell"><span class="pass-k">Bữa trưa</span><span class="pass-v" id="pass-meal"></span></div>
+          <div class="pass-cell"><span class="pass-k">Check-in lúc</span><span class="pass-v" id="pass-time"></span></div>
+          <div class="pass-cell"><span class="pass-k">Ngày</span><span class="pass-v" data-ev="date"></span></div>
+          <div class="pass-cell"><span class="pass-k">Giờ</span><span class="pass-v" data-ev="time"></span></div>
+        </div>
+      </div>
+      <div class="pass-tear" aria-hidden="true"></div>
+      <div class="pass-stub">
+        <div class="venue" id="pass-venue"></div>
+        <div class="gift" id="pass-gift"></div>
+      </div>
+    </article>
+
+    <div class="card change" id="change-card">
+      <p class="muted" id="change-note"></p>
+      <button class="btn btn-ghost" type="button" id="change-btn">Đổi món</button>
+      <div id="change-panel" hidden>
+        <div class="meals" id="change-list" role="radiogroup" aria-label="Đổi suất ăn trưa"></div>
+        <p class="error" id="change-error" role="alert" hidden></p>
+        <div class="row">
+          <button class="btn btn-ghost" type="button" id="change-cancel">Huỷ</button>
+          <button class="btn btn-primary" type="button" id="change-save" disabled><span>Lưu thay đổi</span></button>
+        </div>
+      </div>
+    </div>
+    <p class="tip">Chụp màn hình thẻ này để xuất trình khi cần.</p>
+    <button class="link-btn center" type="button" data-action="home">Check-in cho người khác</button>
+  </section>
+
+  <!-- ACK -->
+  <section class="view" id="view-ack" hidden>
+    <div class="card center-card" id="ack-card"></div>
+  </section>
+
+  <!-- MESSAGE -->
+  <section class="view" id="view-msg" hidden>
+    <div class="card center-card" id="msg-card"></div>
+  </section>
+
+  <footer class="foot">
+    <span data-ev="organizer">KindHRM · Nghề nhân sự tử tế</span>
+    <span id="foot-hotline"></span>
+  </footer>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+<div class="loader" id="loader" hidden><span></span></div>
+
+<script src="assets/config.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

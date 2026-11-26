@@ -214,6 +214,11 @@ body.on-pass .bg-waves { display: none; }
 .gift .ico { font-size: 20px; line-height: 1.2; }
 .gift b { color: var(--ink); display: block; font-size: 14px; }
 .gift:empty, .venue:empty { display: none; }
+.gift.travel-note { background: var(--yellow-soft); }
+.travel { display: flex; gap: 14px; align-items: flex-start; background: var(--yellow-soft); border-color: #F3DD9E; border-left: 4px solid var(--yellow); }
+.travel .ico { font-size: 24px; line-height: 1.2; }
+.travel h3 { margin: 0 0 4px; font-size: 15px; font-weight: 700; }
+.travel p { margin: 0; color: var(--ink-2); font-size: 14px; line-height: 1.55; }
 
 .change { text-align: center; }
 .change .muted { margin-bottom: 0; }

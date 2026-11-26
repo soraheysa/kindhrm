@@ -7,6 +7,66 @@
   const $ = (s, el = document) => el.querySelector(s);
   const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
 
+  // Built-in copy of the Event-tab content. Shown instantly; replaced by live data from the API.
+  const DEFAULT_EVENT = {
+    "name": "Trao gửi tri thức nghề nhân sự",
+    "season": "KindHRM 2026",
+    "theme": "Tái thiết công việc & nguồn nhân lực trong thời đại AI",
+    "date": "Thứ Bảy, 28/11/2026",
+    "time": "08:00 - 16:30",
+    "checkinTime": "08:00 - 08:30",
+    "venueName": "Viện Đào tạo PSO",
+    "venueAddress": "Tầng 6, số 5 Trương Quốc Dung, P. Phú Nhuận, TP.HCM",
+    "mapUrl": "https://maps.app.goo.gl/PLuQtobnbpU6y6dx5",
+    "speakers": [
+      "Ms. LÊ HÀ MAI THẢO",
+      "Ms. NGUYỄN NGỌC DIỆP",
+      "Ms. LÊ NGUYÊN KIM BÌNH"
+    ],
+    "program": [
+      "PHẦN 1: THIẾT KẾ CÔNG VIỆC",
+      "• Xác định bài toán và kết quả công việc cần đạt.",
+      "• Phân tích nhiệm vụ và phân vai giữa con người & AI.",
+      "• Thiết kế lại quy trình và công việc HR.",
+      "• Xác định nhu cầu và phương án nhân lực.",
+      "",
+      "PHẦN 2: QUẢN TRỊ NĂNG LỰC VÀ HIỆU SUẤT",
+      "• Xác định chuẩn năng lực theo yêu cầu mới.",
+      "• Điều chỉnh tiêu chí và thước đo hiệu suất.",
+      "",
+      "PHẦN 3: KÍCH HOẠT AI TRONG CÔNG VIỆC - VAI TRÒ CỦA HR",
+      "• Phân biệt cá nhân sử dụng AI với năng lực ứng dụng AI của tổ chức.",
+      "• Xác định vai trò của HR trong việc tạo sự sẵn sàng và phối hợp các bên liên quan.",
+      "• Kích hoạt việc học và thử nghiệm AI từ bài toán công việc; ghi nhận và lan tỏa những cách làm hiệu quả."
+    ],
+    "hotline": "",
+    "organizer": "KindHRM - Nghề nhân sự tử tế",
+    "lunchNote": "Mỗi suất ăn kèm 1 ly nước ngọt.",
+    "giftReminder": "Ban tổ chức có quà check-out dành tặng {{xung_ho}} khi chương trình kết thúc. Hãy ở lại đến cuối chương trình để nhận quà {{xung_ho}} nhé!",
+    "travelNote": "{{xung_ho}} lưu ý, do ngày tổ chức chương trình có nhiều sự kiện khác cùng diễn ra song song, dẫn tới khó khăn trong việc giữ xe và ra vào, BTC cũng khuyến khích {{xung_ho}} sử dụng xe công nghệ để di chuyển tới chương trình.",
+    "meals": [
+      {
+        "id": "meal_1",
+        "name": "Cơm Gà rán",
+        "quota": 100,
+        "taken": 0,
+        "remaining": 100
+      },
+      {
+        "id": "meal_2",
+        "name": "Burger Tôm",
+        "quota": 50,
+        "taken": 0,
+        "remaining": 50
+      }
+    ],
+    "noneLabel": "Tôi không dùng bữa trưa",
+    "checkinOpenText": "06:00, 28/11/2026",
+    "checkinCloseText": "18:00, 28/11/2026",
+    "mealDeadlineText": "11:00, 28/11/2026",
+    "phase": "before"
+  };
+
   const state = { event: null, person: null, checkin: null, canChange: false, phase: 'open', pick: null, changePick: null };
 
   /* ------------------------------------------------------------------ API */
@@ -128,6 +188,10 @@
     if (program.some(Boolean)) parts.push(`<h4>Nội dung chương trình</h4><div class="prog">${renderProgram(program)}</div>`);
     if (clean(ev.venueAddress)) parts.push(`<h4>Địa điểm</h4><ul><li>${esc([clean(ev.venueName), clean(ev.venueAddress)].filter(Boolean).join(', '))}</li></ul>`);
     $('#program-body').innerHTML = parts.join('');
+
+    const travel = fill(ev.travelNote, null);
+    $('#travel-card').hidden = !travel;
+    $('#travel-text').textContent = travel;
     $('#program').hidden = !parts.length;
   }
 
@@ -258,6 +322,8 @@
     $('#pass-venue').innerHTML = vName || vAddr
       ? `<b>${esc(vName)}</b>${esc(vAddr)}${clean(ev.mapUrl) ? ` · <a href="${esc(ev.mapUrl)}" target="_blank" rel="noopener">Chỉ đường</a>` : ''}`
       : '';
+    const travel = fill(ev.travelNote, p);
+    $('#pass-travel').innerHTML = travel ? `<span class="ico" aria-hidden="true">🚕</span><span><b>Lưu ý di chuyển</b>${esc(travel)}</span>` : '';
     const gift = fill(ev.giftReminder, p);
     $('#pass-gift').innerHTML = gift ? `<span class="ico" aria-hidden="true">🎁</span><span><b>Đừng về sớm nhé!</b>${esc(gift)}</span>` : '';
 
@@ -365,6 +431,7 @@
   /* ---------------------------------------------------------------- init */
   async function init() {
     if (DEMO) $('#demo-banner').hidden = false;
+    renderEvent(DEFAULT_EVENT);
     document.addEventListener('click', e => {
       const a = e.target.closest('[data-action="home"]');
       if (a) { e.preventDefault(); goHome(); }
@@ -397,16 +464,9 @@
   /* ---------------------------------------------------------------- demo */
   const Demo = (() => {
     const wait = ms => new Promise(r => setTimeout(r, ms));
-    const ev = {
-      name: 'Trao gửi tri thức nghề nhân sự', season: 'KindHRM 2026', theme: 'Chủ đề sẽ được cập nhật',
-      date: 'Thứ Bảy, 28/11/2026', time: '08:00 - 16:30', checkinTime: '07:30 - 08:00',
-      venueName: 'Hội trường mẫu', venueAddress: '123 Đường Mẫu, Quận 1, TP.HCM', mapUrl: 'https://maps.google.com',
-      speakers: ['Diễn giả sẽ được cập nhật'], program: ['PHẦN 1: NỘI DUNG MẪU', '• Ý chính thứ nhất', '• Ý chính thứ hai', '', 'PHẦN 2: NỘI DUNG MẪU', '• Ý chính thứ ba'],
-      hotline: '0900 000 000', organizer: 'KindHRM - Nghề nhân sự tử tế', lunchNote: 'Mỗi suất ăn kèm 1 ly nước ngọt.',
-      giftReminder: 'Ban tổ chức có quà check-out dành tặng {{xung_ho}} khi chương trình kết thúc. Hãy ở lại đến cuối chương trình để nhận quà nhé!',
-      meals: [{ id: 'meal_1', name: 'Cơm Gà rán', quota: 100, taken: 63 }, { id: 'meal_2', name: 'Burger Tôm', quota: 50, taken: 47 }],
-      noneLabel: 'Tôi không dùng bữa trưa', checkinOpenText: '06:00, 28/11/2026', mealDeadlineText: '11:00, 28/11/2026', phase: 'open',
-    };
+    const ev = JSON.parse(JSON.stringify(DEFAULT_EVENT));
+    ev.phase = 'open';
+    ev.meals[0].taken = 63; ev.meals[1].taken = 47;
     const people = {
       DEMO001: { id: 'DEMO001', name: 'Nguyễn Thị Minh An', first: 'An', xungHo: 'Chị', company: 'Công ty TNHH Mẫu', title: 'HR Manager', phoneMasked: '0909•••123', emailMasked: 'mi•••@gmail.com', q: true },
       DEMO002: { id: 'DEMO002', name: 'Trần Văn Bình', first: 'Bình', xungHo: 'Anh/Chị', company: 'Công ty Mẫu 2', title: 'HRBP', phoneMasked: '0912•••456', emailMasked: 'bi•••@gmail.com', q: false },

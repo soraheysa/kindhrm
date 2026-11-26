@@ -121,14 +121,29 @@
 
     // program details
     const speakers = (ev.speakers || []).map(clean).filter(Boolean);
-    const agenda = (ev.agenda || []).filter(a => clean(a.item));
+    const program = (ev.program || []).map(l => clean(l) ? l : '');
     const parts = [];
     if (clean(ev.checkinTime)) parts.push(`<h4>Giờ đón khách</h4><ul><li>${esc(clean(ev.checkinTime))}</li></ul>`);
     if (speakers.length) parts.push(`<h4>Diễn giả</h4><ul>${speakers.map(s => `<li>${esc(s)}</li>`).join('')}</ul>`);
-    if (agenda.length) parts.push(`<h4>Chương trình</h4><ul>${agenda.map(a => `<li><span class="t">${esc(a.time)}</span><span>${esc(a.item)}</span></li>`).join('')}</ul>`);
+    if (program.some(Boolean)) parts.push(`<h4>Nội dung chương trình</h4><div class="prog">${renderProgram(program)}</div>`);
     if (clean(ev.venueAddress)) parts.push(`<h4>Địa điểm</h4><ul><li>${esc([clean(ev.venueName), clean(ev.venueAddress)].filter(Boolean).join(', '))}</li></ul>`);
     $('#program-body').innerHTML = parts.join('');
     $('#program').hidden = !parts.length;
+  }
+
+  // "PHẦN 1: ..." lines become headings, "• ..." lines bullets, "08:00 | ..." lines timed rows
+  function renderProgram(lines) {
+    let html = '', list = '';
+    const flush = () => { if (list) { html += `<ul>${list}</ul>`; list = ''; } };
+    lines.forEach(l => {
+      const bullet = l.match(/^[•\-*–]\s*(.+)$/);
+      const timed = l.match(/^(\d{1,2}[:h.]\d{2})\s*\|\s*(.+)$/);
+      if (bullet) list += `<li>${esc(bullet[1])}</li>`;
+      else if (timed) list += `<li class="timed"><span class="t">${esc(timed[1])}</span><span>${esc(timed[2])}</span></li>`;
+      else { flush(); if (l) html += `<p class="prog-h">${esc(l)}</p>`; }
+    });
+    flush();
+    return html;
   }
 
   /* --------------------------------------------------------------- meals */
@@ -386,7 +401,7 @@
       name: 'Trao gửi tri thức nghề nhân sự', season: 'KindHRM 2026', theme: 'Chủ đề sẽ được cập nhật',
       date: 'Thứ Bảy, 28/11/2026', time: '08:00 - 16:30', checkinTime: '07:30 - 08:00',
       venueName: 'Hội trường mẫu', venueAddress: '123 Đường Mẫu, Quận 1, TP.HCM', mapUrl: 'https://maps.google.com',
-      speakers: ['Diễn giả sẽ được cập nhật'], agenda: [{ time: '07:30', item: 'Đón khách, check-in' }, { time: '08:30', item: 'Khai mạc' }, { time: '11:30', item: 'Ăn trưa' }, { time: '16:00', item: 'Bế mạc, nhận quà check-out' }],
+      speakers: ['Diễn giả sẽ được cập nhật'], program: ['PHẦN 1: NỘI DUNG MẪU', '• Ý chính thứ nhất', '• Ý chính thứ hai', '', 'PHẦN 2: NỘI DUNG MẪU', '• Ý chính thứ ba'],
       hotline: '0900 000 000', organizer: 'KindHRM - Nghề nhân sự tử tế', lunchNote: 'Mỗi suất ăn kèm 1 ly nước ngọt.',
       giftReminder: 'Ban tổ chức có quà check-out dành tặng {{xung_ho}} khi chương trình kết thúc. Hãy ở lại đến cuối chương trình để nhận quà nhé!',
       meals: [{ id: 'meal_1', name: 'Cơm Gà rán', quota: 100, taken: 63 }, { id: 'meal_2', name: 'Burger Tôm', quota: 50, taken: 47 }],

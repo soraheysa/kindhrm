@@ -20,14 +20,14 @@
   <svg viewBox="0 0 1440 420" preserveAspectRatio="none"><path d="M0 220 C 320 120, 620 330, 980 220 S 1440 160, 1440 160 V420 H0Z" fill="#FFB200" opacity=".10"/><path d="M0 300 C 380 220, 760 380, 1100 290 S 1440 260, 1440 260 V420 H0Z" fill="#FFB200" opacity=".14"/></svg>
 </div>
 
-<div class="demo-banner" id="demo-banner" hidden>Chế độ demo · dữ liệu mẫu, chưa kết nối Google Sheet. Thử mã <b>DEMO001</b> hoặc <b>DEMO002</b>.</div>
+<div class="demo-banner" id="demo-banner" hidden>Bản xem thử · chưa kết nối danh sách khách nên chưa check-in thật được. Thử mã <b>DEMO001</b> hoặc <b>DEMO002</b>.</div>
 
 <main class="shell">
   <header class="brand">
     <img class="brand-logo" src="assets/logo.png" alt="KindHRM · Nghề nhân sự tử tế" width="168" height="56">
     <p class="eyebrow" data-ev="season"></p>
     <h1 class="title" data-ev="name">Trao gửi tri thức nghề nhân sự</h1>
-    <p class="theme" data-ev="theme"></p>
+    <p class="theme" data-ev="theme">Tái thiết công việc &amp; nguồn nhân lực trong thời đại AI</p>
     <ul class="chips" id="event-chips"></ul>
   </header>
 
@@ -44,6 +44,11 @@
         <button class="btn btn-primary" type="submit" id="lookup-btn"><span>Tiếp tục</span></button>
       </form>
       <button class="link-btn" id="last-pass" type="button" hidden></button>
+    </div>
+
+    <div class="card travel" id="travel-card" hidden>
+      <span class="ico" aria-hidden="true">🚕</span>
+      <div><h3>Lưu ý di chuyển</h3><p id="travel-text"></p></div>
     </div>
 
     <details class="card program" id="program" hidden>
@@ -101,6 +106,7 @@
       <div class="pass-tear" aria-hidden="true"></div>
       <div class="pass-stub">
         <div class="venue" id="pass-venue"></div>
+        <div class="gift travel-note" id="pass-travel"></div>
         <div class="gift" id="pass-gift"></div>
       </div>
     </article>
